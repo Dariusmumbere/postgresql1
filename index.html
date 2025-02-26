@@ -434,210 +434,267 @@
   </div>
 
   <!-- JavaScript -->
-  <script>
-    const products = [];
-    const stockItems = [];
-    const services = [];
-    let totalSales = 0;
-    let grossProfit = 0;
-    let totalExpenses = 0;
-    let debtorsBalance = 0;
-    let netProfit = 0;
-    let stockBalance = 0;
-    const recentTransactions = [];
+ <script>
+  const products = [];
+  const stockItems = [];
+  const services = [];
+  let totalSales = 0;
+  let grossProfit = 0;
+  let totalExpenses = 0;
+  let debtorsBalance = 0;
+  let netProfit = 0;
+  let stockBalance = 0;
+  const recentTransactions = [];
 
-    // Fetch products and services on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      fetchProducts();
-      fetchServices();
-    });
+  // Fetch products and services on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    fetchProducts();
+    fetchServices();
+  });
 
-    // Fetch products from backend
-    function fetchProducts() {
-      fetch('https://postgresql-1-4neb.onrender.com/products/')
-        .then(response => response.json())
-        .then(data => {
-          products.length = 0; // Clear existing products
-          products.push(...data);
-          updateProductList();
-        });
-    }
-
-    // Fetch services from backend
-    function fetchServices() {
-      fetch('https://postgresql-1-4neb.onrender.com/services/')
-        .then(response => response.json())
-        .then(data => {
-          services.length = 0; // Clear existing services
-          services.push(...data);
-          updateServiceList();
-        });
-    }
-
-    // Add Product Form Submission
-    document.getElementById('addProductForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const productData = {
-        name: e.target[0].value,
-        type: e.target[1].value,
-        buying_price: parseFloat(e.target[2].value),
-        selling_price: parseFloat(e.target[3].value)
-      };
-
-      fetch('https://postgresql-1-4neb.onrender.com/products/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(productData)
+  // Fetch products from backend
+  function fetchProducts() {
+    fetch('https://postgresql-1-4neb.onrender.com/products/')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        return response.json();
       })
-      .then(response => response.json())
-      .then(data => {
+      .then((data) => {
+        products.length = 0; // Clear existing products
+        products.push(...data);
+        updateProductList();
+      })
+      .catch((error) => {
+        console.error('Error fetching products:', error);
+      });
+  }
+
+  // Fetch services from backend
+  function fetchServices() {
+    fetch('https://postgresql-1-4neb.onrender.com/services/')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        services.length = 0; // Clear existing services
+        services.push(...data);
+        updateServiceList();
+      })
+      .catch((error) => {
+        console.error('Error fetching services:', error);
+      });
+  }
+
+  // Add Product Form Submission
+  document.getElementById('addProductForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    const productData = {
+      name: e.target[0].value,
+      type: e.target[1].value,
+      buying_price: parseFloat(e.target[2].value),
+      selling_price: parseFloat(e.target[3].value),
+    };
+
+    fetch('https://postgresql-1-4neb.onrender.com/products/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to add product');
+        }
+        return response.json();
+      })
+      .then((data) => {
         products.push(data);
         updateProductList();
         alert('Product added successfully!');
-        e.target.reset();
+        e.target.reset(); // Reset the form
         closeModal('addProductModal');
-      });
-    });
-
-    // Add Service Form Submission
-    document.getElementById('addServiceForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const serviceData = {
-        name: e.target[0].value,
-        description: e.target[1].value,
-        price: parseFloat(e.target[2].value)
-      };
-
-      fetch('https://postgresql-1-4neb.onrender.com/services/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(serviceData)
       })
-      .then(response => response.json())
-      .then(data => {
+      .catch((error) => {
+        console.error('Error adding product:', error);
+        alert('Failed to add product. Check the console for details.');
+      });
+  });
+
+  // Add Service Form Submission
+  document.getElementById('addServiceForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    const serviceData = {
+      name: e.target[0].value,
+      description: e.target[1].value,
+      price: parseFloat(e.target[2].value),
+    };
+
+    fetch('https://postgresql-1-4neb.onrender.com/services/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(serviceData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to add service');
+        }
+        return response.json();
+      })
+      .then((data) => {
         services.push(data);
         updateServiceList();
         alert('Service added successfully!');
-        e.target.reset();
+        e.target.reset(); // Reset the form
         closeModal('addServiceModal');
+      })
+      .catch((error) => {
+        console.error('Error adding service:', error);
+        alert('Failed to add service. Check the console for details.');
       });
-    });
+  });
 
-    // Update Product List
-    function updateProductList() {
-      const productList = document.getElementById('productList');
-      productList.innerHTML = products.map((product, index) => `
-        <div onclick="showProductDetails(${index})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">${product.name}</div>
-      `).join('');
-    }
+  // Update Product List
+  function updateProductList() {
+    const productList = document.getElementById('productList');
+    productList.innerHTML = products
+      .map(
+        (product, index) => `
+        <div onclick="showProductDetails(${index})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">
+          ${product.name}
+        </div>
+      `
+      )
+      .join('');
+  }
 
-    // Update Service List
-    function updateServiceList() {
-      const serviceList = document.getElementById('serviceList');
-      const serviceTableBody = document.getElementById('serviceTableBody');
+  // Update Service List
+  function updateServiceList() {
+    const serviceList = document.getElementById('serviceList');
+    const serviceTableBody = document.getElementById('serviceTableBody');
 
-      // Update the service list in the Products/Services card
-      serviceList.innerHTML = services.map((service, index) => `
-        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">${service.name}</div>
-      `).join('');
+    // Update the service list in the Products/Services card
+    serviceList.innerHTML = services
+      .map(
+        (service) => `
+        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">
+          ${service.name}
+        </div>
+      `
+      )
+      .join('');
 
-      // Update the service table in the Manage Services modal
-      serviceTableBody.innerHTML = services.map(service => `
+    // Update the service table in the Manage Services modal
+    serviceTableBody.innerHTML = services
+      .map(
+        (service) => `
         <tr>
           <td>${service.name}</td>
           <td>${service.description}</td>
           <td>${service.price.toFixed(2)}</td>
         </tr>
-      `).join('');
+      `
+      )
+      .join('');
+  }
+
+  // Show Product Details
+  function showProductDetails(index) {
+    const product = products[index];
+    document.getElementById('productDetailsTitle').textContent = product.name;
+    document.getElementById('productType').textContent = product.type;
+    document.getElementById('buyingPrice').textContent = product.buying_price.toFixed(2);
+    document.getElementById('sellingPrice').textContent = product.selling_price.toFixed(2);
+    document.getElementById('markupProfit').textContent = (
+      (product.selling_price - product.buying_price) *
+      0.1
+    ).toFixed(2);
+    document.getElementById('productDetailsModal').classList.remove('hidden');
+  }
+
+  // Close Modals
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  }
+
+  // Open Modals
+  function openAddProductModal() {
+    document.getElementById('addProductModal').classList.remove('hidden');
+  }
+
+  function openAddServiceModal() {
+    document.getElementById('addServiceModal').classList.remove('hidden');
+  }
+
+  function openStockManagementModal() {
+    document.getElementById('stockManagementModal').classList.remove('hidden');
+  }
+
+  function openServiceManagementModal() {
+    document.getElementById('serviceManagementModal').classList.remove('hidden');
+  }
+
+  // Automatic Selling Price Calculation
+  document.getElementById('buyingPriceInput').addEventListener('input', (e) => {
+    const buyingPrice = parseFloat(e.target.value);
+    if (!isNaN(buyingPrice)) {
+      const sellingPrice = buyingPrice * 1.1; // 10% markup
+      document.getElementById('sellingPriceInput').value = sellingPrice.toFixed(2);
     }
+  });
 
-    // Show Product Details
-    function showProductDetails(index) {
-      const product = products[index];
-      document.getElementById('productDetailsTitle').textContent = product.name;
-      document.getElementById('productType').textContent = product.type;
-      document.getElementById('buyingPrice').textContent = product.buying_price.toFixed(2);
-      document.getElementById('sellingPrice').textContent = product.selling_price.toFixed(2);
-      document.getElementById('markupProfit').textContent = ((product.selling_price - product.buying_price) * 0.1).toFixed(2);
-      document.getElementById('productDetailsModal').classList.remove('hidden');
+  // Dark/Light Mode Toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  themeToggle.addEventListener('click', () => {
+    const htmlElement = document.documentElement;
+    htmlElement.classList.toggle('dark');
+
+    if (htmlElement.classList.contains('dark')) {
+      console.log('Switching to Dark Mode');
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      console.log('Switching to Light Mode');
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
     }
+  });
 
-    // Close Modals
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.add('hidden');
-    }
-
-    // Open Modals
-    function openAddProductModal() {
-      document.getElementById('addProductModal').classList.remove('hidden');
-    }
-
-    function openAddServiceModal() {
-      document.getElementById('addServiceModal').classList.remove('hidden');
-    }
-
-    function openStockManagementModal() {
-      document.getElementById('stockManagementModal').classList.remove('hidden');
-    }
-
-    function openServiceManagementModal() {
-      document.getElementById('serviceManagementModal').classList.remove('hidden');
-    }
-
-    // Automatic Selling Price Calculation
-    document.getElementById('buyingPriceInput').addEventListener('input', (e) => {
-      const buyingPrice = parseFloat(e.target.value);
-      if (!isNaN(buyingPrice)) {
-        const sellingPrice = buyingPrice * 1.1; // 10% markup
-        document.getElementById('sellingPriceInput').value = sellingPrice.toFixed(2);
-      }
-    });
-
-    // Dark/Light Mode Toggle
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    themeToggle.addEventListener('click', () => {
-      const htmlElement = document.documentElement;
-      htmlElement.classList.toggle('dark');
-      
-      if (htmlElement.classList.contains('dark')) {
-        console.log('Switching to Dark Mode');
-        themeIcon.classList.remove('fa-moon');
-        themeIcon.classList.add('fa-sun');
-      } else {
-        console.log('Switching to Light Mode');
-        themeIcon.classList.remove('fa-sun');
-        themeIcon.classList.add('fa-moon');
-      }
-    });
-
-    // Bar Graph for Sales Analysis
-    const salesBarCtx = document.getElementById('salesBarChart').getContext('2d');
-    const salesBarChart = new Chart(salesBarCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
+  // Bar Graph for Sales Analysis
+  const salesBarCtx = document.getElementById('salesBarChart').getContext('2d');
+  const salesBarChart = new Chart(salesBarCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
           label: 'Sales ($)',
           data: [1200, 1900, 3000, 2500, 2000, 2800],
           backgroundColor: 'rgba(59, 130, 246, 0.6)',
           borderColor: 'rgba(59, 130, 246, 1)',
           borderWidth: 1,
-        }]
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
       },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  </script>
+    },
+  });
+</script>
 </body>
 </html>
